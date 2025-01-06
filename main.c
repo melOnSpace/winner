@@ -354,7 +354,7 @@ LRESULT WndProc(HWND wnd, UINT msg, WPARAM w_param, LPARAM l_param) {
                 }
                 global_data.flashlight.enabled = TRUE;
 
-            } else if (keycombo('C', FALSE, TRUE)) {
+            } else if (keycombo('P', FALSE, TRUE)) {
                 global_data.camera.pos.x = 0.0f;
                 global_data.camera.pos.y = 0.0f;
 
