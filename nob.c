@@ -21,13 +21,14 @@
 #define cmd_append_run(cmdptr, runmacro) nob_da_append_many((cmdptr), (runmacro), sizeof(runmacro)/sizeof(*runmacro))
 
 typedef struct {
-    bool echo, no_bake, dry;
+    bool echo, no_bake, dry, print_help;
     const char* opt;
     Nob_Cmd run;
 } Todo;
 
 bool get_todo(int argc, char** argv, Todo* todo);
 bool bake_shaders(const Todo todo);
+void print_help_page(void);
 
 int main(int argc, char** argv) {
     NOB_GO_REBUILD_URSELF(argc, argv);
@@ -36,11 +37,17 @@ int main(int argc, char** argv) {
     if (!get_todo(argc, argv, &todo))
         return 1;
 
+    Nob_Cmd cmd = {0};
     int result = 0;
+
+    if (todo.print_help) {
+        print_help_page();
+        nob_return_defer(0);
+    }
+
     if (!bake_shaders(todo))
         nob_return_defer(1);
 
-    Nob_Cmd cmd = {0};
     nob_cmd_append(&cmd, COMPILER, "main.c", todo.opt);
     nob_cmd_append(&cmd, "-Wall", "-Wextra", "-Werror", "-static");
     if (strcmp(todo.opt, "-Os") == 0) {
@@ -102,6 +109,9 @@ bool get_todo(int argc, char** argv, Todo* todo) {
         else if (strcmp(argv[i], "no-bake") == 0) todo->no_bake = true;
         else if (strcmp(argv[i], "dry") == 0) todo->dry = true;
         else if (strcmp(argv[i], "run") == 0) cmd_append_run(&todo->run, RUN_CMD);
+        else if (strcmp(argv[i], "help") == 0) todo->print_help = true;
+        else if (strcmp(argv[i], "/?") == 0) todo->print_help = true;
+        else if (strcmp(argv[i], "--help") == 0) todo->print_help = true;
         else if (strcmp(argv[i], "release") == 0) {
             todo->no_bake = false;
             todo->dry = false;
@@ -182,4 +192,24 @@ defer:
     if (shaders_dir.items) nob_da_free(shaders_dir);
     if (file_data.items) nob_sb_free(file_data);
     return result;
+}
+
+void print_help_page(void) {
+    printf("The build system for Winner\n");
+    printf("USAGE: .\\nob.exe [Arguments]\n");
+    printf("\n");
+    printf("[Arguments]\n");
+    printf("  echo      prints the commands needed to compile, this will NOT generate shaders, try `nob.exe dry` for that\n");
+    printf("  O0        compiles for O0\n");
+    printf("  O1        compiles for O1\n");
+    printf("  O2        compiles for O2\n");
+    printf("  O3        compiles for O3\n");
+    printf("  Os        compiles to get the binary very small and strips symbols\n");
+    printf("  no-bake   does not new generate shaders\n");
+    printf("  dry       will generate new shaders but will not compile a binary\n");
+    printf("  run       runs winner after compilation\n");
+    printf("  help      prints the current help page\n");
+    printf("  /?        prints the current help page\n");
+    printf("  --help    prints the current help page\n");
+    printf("  release   sets Os, bakes shaders, and disables dry\n");
 }
