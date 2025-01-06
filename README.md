@@ -26,9 +26,11 @@ The following are only enabled if winner is compiled for debug
 # How to Compile
 
 Winner is compiled with the build system called [nob](https://github.com/tsoding/nob.h). The build system must first be compiled using any C compiler, however winner requires gcc so that should be used
+
 `gcc nob.c -o nob.exe`
 
 Next run the build system with the `release` argument
+
 `.\nob.exe release`
 
 And that is it!
